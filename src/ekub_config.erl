@@ -4,7 +4,8 @@
     filename/0,
 
     read/1, read/2,
-
+    read_doc/1,
+    
     minify/1,
     flatten/1,
 
@@ -46,6 +47,12 @@ read(FileName, Options) ->
         (Option, {ok, _Config}) -> {error, {bad_option, Option}};
         (_Option, {error, Reason}) -> {error, Reason}
     end, read(FileName), Options).
+
+-spec read_doc(Doc :: string() | binary())  ->
+    {ok, Config :: kubeconfig()} | {error, Reason :: term()}.
+
+read_doc(Doc) ->
+    ?Yaml:read_doc(Doc, [lists]).
 
 -spec minify(Config :: kubeconfig()) ->
     {ok, MinifiedConfig :: kubeconfig()} | {error, Reason :: term()}.

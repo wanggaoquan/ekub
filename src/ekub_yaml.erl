@@ -65,7 +65,7 @@ decode(Yaml) ->
                            Proplist /= null]}
     catch
         throw:{yamerl_exception, [Error]} ->
-            {error, Error#yamerl_parsing_error.text}
+            {error, Error}
     end.
 
 to_map(Proplists) -> to_map(Proplists, []).

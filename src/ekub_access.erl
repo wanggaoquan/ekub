@@ -46,6 +46,7 @@
 
 -define(OptionsOrder, [
     kubeconfig,
+    kubeconfig_doc,
     ca_cert_file,
     ca_cert,
     client_cert_file,
@@ -61,7 +62,7 @@
     server
 ]).
 
--define(DefaultOptionsOrder, [kubeconfig, service_account]).
+%% -define(DefaultOptionsOrder, [kubeconfig, service_account]).
 
 -define(DefaultServiceAccountDir,
     "/var/run/secrets/kubernetes.io/serviceaccount").
@@ -116,6 +117,12 @@ read_option({kubeconfig, FileName}) ->
         {error, Reason} -> {error, Reason}
     end;
 
+read_option({kubeconfig_doc, Doc}) ->
+    case ?Config:read_doc(Doc) of
+        {ok, [Config|_]} -> read_kubeconfig(Config);
+        {error, Reason} -> {error, Reason}
+    end;
+
 read_option({Name, Value}) when
     Name == ca_cert_file;
     Name == client_cert_file;
@@ -145,7 +152,8 @@ read_option({Name, Value}) when
         {error, Reason} -> {error, Reason}
     end;
 
-read_option({Name, Value}) -> {ok, #{Name => Value}}.
+read_option({Name, Value}) -> 
+    {ok, #{Name => Value}}.
 
 read_kubeconfig(Config) ->
     case maps:find("current-context", Config) of
@@ -205,8 +213,8 @@ decode_cert_b64(Base64Encoded) ->
 
 decode_cert(Value) ->
     try public_key:pem_decode(Value) of
-        [{'Certificate', Cert, not_encrypted}] -> {ok, Cert};
-        [{Type, Cert, not_encrypted}] -> {ok, {Type, Cert}};
+        [{'Certificate', Cert, not_encrypted}|_] -> {ok, Cert};
+        [{Type, Cert, not_encrypted}|_] -> {ok, {Type, Cert}};
         [] -> {error, invalid_pem}
     catch
         _:_ -> {error, invalid_pem}
